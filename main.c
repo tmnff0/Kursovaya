@@ -1,29 +1,42 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
-#define MAX_SIZE 100
-
 typedef struct {
-    int data[MAX_SIZE];
-    int top;
+    int* data; 
+    int top; 
+    int capacity; 
 } Stack;
 
-void initializeStack(Stack* stack) {
+void initializeStack(Stack* stack, int initialCapacity) {
+    stack->data = (int*)malloc(initialCapacity * sizeof(int)); 
+    if (!stack->data) {
+        printf("Error: Memory allocation failed\n");
+        exit(1); 
+    }
     stack->top = -1;
+    stack->capacity = initialCapacity;
 }
 
 bool isEmpty(Stack* stack) {
     return stack->top == -1;
 }
 
-bool isFull(Stack* stack) {
-    return stack->top == MAX_SIZE - 1;
+void resizeStack(Stack* stack) {
+    stack->capacity *= 2; 
+    int* newData = (int*)realloc(stack->data, stack->capacity * sizeof(int));
+    if (!newData) {
+        printf("Error: Memory reallocation failed\n");
+        free(stack->data); 
+        exit(1);
+    }
+    stack->data = newData;
 }
 
 void push(Stack* stack, int value) {
-    if (isFull(stack)) {
-        printf("Error: Stack is full\n");
-        return;
+    if (stack->top == stack->capacity - 1) { 
+        printf("Resizing stack to capacity %d\n", stack->capacity * 2);
+        resizeStack(stack);
     }
     stack->top++;
     stack->data[stack->top] = value;
@@ -60,11 +73,20 @@ void printStack(Stack* stack) {
     printf("\n");
 }
 
+void freeStack(Stack* stack) {
+    free(stack->data); 
+    stack->data = NULL;
+    stack->top = -1;
+    stack->capacity = 0;
+    printf("Stack memory freed\n");
+}
+
 int main() {
     Stack stack;
-    int choice, value;
+    int initialCapacity = 2; 
+    initializeStack(&stack, initialCapacity);
 
-    initializeStack(&stack);
+    int choice, value;
 
     do {
         printf("\nMenu:\n");
@@ -77,35 +99,41 @@ int main() {
         scanf("%d", &choice);
 
         switch (choice) {
+            
             case 1:
                 printf("Enter element to push: ");
                 scanf("%d", &value);
                 push(&stack, value);
                 break;
+            
             case 2:
                 value = pop(&stack);
                 if (value != -1) {
                     printf("Popped element: %d\n", value);
                 }
                 break;
+            
             case 3:
                 value = peek(&stack);
                 if (value != -1) {
                     printf("Top element: %d\n", value);
                 }
                 break;
+            
             case 4:
                 printStack(&stack);
                 break;
+            
             case 5:
                 printf("Exiting the program\n");
                 break;
+            
             default:
                 printf("Invalid choice, please try again.\n");
                 break;
         }
 
     } while (choice != 5);
-
+    freeStack(&stack);
     return 0;
 }
