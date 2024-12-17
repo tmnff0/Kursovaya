@@ -10,10 +10,6 @@ typedef struct {
 
 void initializeStack(Stack* stack, int initialCapacity) {
     stack->data = (int*)malloc(initialCapacity * sizeof(int)); 
-    if (!stack->data) {
-        printf("Error: Memory allocation failed\n");
-        exit(1); 
-    }
     stack->top = -1;
     stack->capacity = initialCapacity;
 }
@@ -25,11 +21,6 @@ bool isEmpty(Stack* stack) {
 void resizeStack(Stack* stack) {
     stack->capacity *= 2; 
     int* newData = (int*)realloc(stack->data, stack->capacity * sizeof(int));
-    if (!newData) {
-        printf("Error: Memory reallocation failed\n");
-        free(stack->data); 
-        exit(1);
-    }
     stack->data = newData;
 }
 
